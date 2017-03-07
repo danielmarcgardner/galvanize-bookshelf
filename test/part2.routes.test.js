@@ -163,7 +163,7 @@ suite('part2 routes', () => {
   test('PATCH /books/:id', (done) => {
     /* eslint-disable max-len */
     request(server)
-      .patch('/books/9')
+      .patch('/books/1')
       .set('Accept', 'application/json')
       .send({
         title: 'Think like Python',
@@ -178,7 +178,7 @@ suite('part2 routes', () => {
         delete res.body.updated_at;
       })
       .expect(200, {
-        id: 9,
+        id: 1,
         title: 'Think like Python',
         author: 'Allen B. Downey',
         genre: 'Python stuff',
