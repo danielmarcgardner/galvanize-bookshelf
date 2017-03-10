@@ -12,7 +12,7 @@
     $('#author').val(book.author);
     $('#genre').val(book.genre);
     $('#description').text(book.description);
-    $('#cover').val(book.cover_url);
+    $('#cover').val(book.coverURL);
     $('#cancel').attr('href', `/book.html?id=${book.id}`);
 
     Materialize.updateTextFields();
@@ -27,7 +27,7 @@
       const author = $('#author').val().trim();
       const genre = $('#genre').val().trim();
       const description = $('#description').val().trim();
-      const cover_url = $('#cover').val().trim();
+      const coverURL = $('#cover').val().trim();
 
       if (!title) {
         return Materialize.toast('Title must not be blank', 3000);
@@ -45,13 +45,13 @@
         return Materialize.toast('Description must not be blank', 3000);
       }
 
-      if (!cover_url) {
+      if (!coverURL) {
         return Materialize.toast('Cover URL must not be blank', 3000);
       }
 
       const options = {
         contentType: 'application/json',
-        data: JSON.stringify({ title, author, genre, description, cover_url }),
+        data: JSON.stringify({ title, author, genre, description, coverURL }),
         dataType: 'json',
         type: 'PATCH',
         url: `/books/${book.id}`
