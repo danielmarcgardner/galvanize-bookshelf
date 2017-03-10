@@ -51,7 +51,7 @@ router.post('/token', (req, res) => {
                             // expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
                             // secure: router.get('env') === 'production'
                         })
-                        knex('users')
+                        knex('users').where('email', req.body.email)
                             .then((users) => {
                                 let userToSend = users[0];
                                 delete userToSend.hashed_password;

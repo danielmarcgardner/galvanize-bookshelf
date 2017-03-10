@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt-as-promised')
 const router = express.Router();
 const knex = require('../knex.js')
 const humps = require('humps');
-
+const jwt = require('jsonwebtoken')
 
 router.post('/users', (req, res) => {
   if (!req.body.email) {
@@ -17,6 +17,13 @@ router.post('/users', (req, res) => {
     res.set("Content-Type", "text/plain");
     return res.status(400).send('Password must be at least 8 characters long')
   }
+knex('users').where('email', req.body.email)
+  .then((checkingEmail) => {
+    if (checkingEmail.length > 0) {
+      res.set("Content-Type", "text/plain");
+      return res.status(400).send('Email already exists')
+    }
+  })
 
   bcrypt.hash(req.body.password, 11)
       .then((hashed_pass) => {
@@ -26,6 +33,15 @@ router.post('/users', (req, res) => {
           email: req.body.email,
           hashed_password: hashed_pass
         }
+        const user = { user_id: req.body.email };
+        const token = jwt.sign(user, process.env.JWT_KEY, {
+            expiresIn: '7 days'
+        })
+        res.cookie('token', token, {
+            httpOnly: true
+            // expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+            // secure: router.get('env') === 'production'
+        })
           knex('users').insert(newUser, '*')
             .then((userSend) => {
               let user = userSend[0]
