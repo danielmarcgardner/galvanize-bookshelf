@@ -33,16 +33,17 @@ router.post('/token', (req, res) => {
     res.set("Content-Type", "text/plain");
     return res.status(400).send('Password must not be blank')
   }
-        knex('users').select('hashed_password').where('email', req.body.email)
+        knex('users').select('hashed_password', 'id').where('email', req.body.email)
             .then((toCompare) => {
               if (toCompare.length === 0) {
                 res.set("Content-Type", "text/plain");
                 return res.status(400).send('Bad email or password')
               }
               let compare = toCompare[0].hashed_password;
+              let userID = toCompare[0].id
                 bcrypt.compare(req.body.password, compare)
                 .then((userAuth) => {
-                        const user = { user_id: req.body.email };
+                        const user = { user_id: userID };
                         const token = jwt.sign(user, process.env.JWT_KEY, {
                             expiresIn: '7 days'
                         })

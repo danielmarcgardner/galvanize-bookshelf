@@ -12,14 +12,14 @@
           .attr({
             href: `/book.html?id=${fav.bookId}`,
             'data-delay': '50',
-            'data-tooltip': fav.title
+            'data-tooltip': fav.tcoverUrl
           })
           .tooltip();
 
         const $card = $('<div>').addClass('card');
         const $cardImage = $('<div>').addClass('card-image');
         const $col = $('<div>').addClass('col s6 m4 l3');
-        const $img = $('<img>').attr({ src: fav.coverURL, alt: fav.title });
+        const $img = $('<img>').attr({ src: fav.coverUrl, alt: fav.title });
 
         $cardImage.append($img);
         $anchor.append($cardImage);
