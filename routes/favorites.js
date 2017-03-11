@@ -58,6 +58,13 @@ router.post('/favorites', (req, res) => {
       res.set("Content-Type", "text/plain");
       return res.status(400).send('Book ID must be an integer');
     }
+    knex('books').where('id', bookID)
+    .then((bookChecker) => {
+      if (bookChecker.length === 0) {
+        res.set("Content-Type", "text/plain");
+        return res.status(404).send('Book not found');
+      }
+    })
     jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, payload) => {
         if (err) {
             res.set("Content-Type", "application/json");
@@ -83,6 +90,17 @@ router.post('/favorites', (req, res) => {
 
 router.delete('/favorites', (req, res) => {
     let bookID = Number(req.body.bookId)
+    if (isNaN(bookID)) {
+      res.set("Content-Type", "text/plain");
+      return res.status(400).send('Book ID must be an integer');
+    }
+    knex('books').where('id', bookID)
+    .then((bookChecker) => {
+      if (bookChecker.length === 0) {
+        res.set("Content-Type", "text/plain");
+        return res.status(404).send('Favorite not found');
+      }
+    })
     jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, payload) => {
         if (err) {
             res.set("Content-Type", "application/json");

@@ -7,7 +7,7 @@ exports.up = function(knex, Promise) {
     table.string('email').unique().notNull();
     table.specificType('hashed_password', 'char(60)').notNull();
     table.timestamps(true, true)
-    knex.raw("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));");
+    // knex.raw("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));");
    });
 };
 
