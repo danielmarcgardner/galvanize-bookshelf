@@ -12,18 +12,18 @@ router.post('/users', (req, res) => {
   if (!req.body.email) {
     res.set("Content-Type", "text/plain");
     return res.status(400).send('Email must not be blank')
-  }
+    }
   if (!req.body.password) {
     res.set("Content-Type", "text/plain");
     return res.status(400).send('Password must be at least 8 characters long')
   }
-knex('users').where('email', req.body.email)
-  .then((checkingEmail) => {
-    if (checkingEmail.length > 0) {
-      res.set("Content-Type", "text/plain");
-      return res.status(400).send('Email already exists')
-    }
-  })
+  knex('users').where('email', req.body.email)
+    .then((checkingEmail) => {
+      if (checkingEmail.length > 0) {
+        res.set("Content-Type", "text/plain");
+        return res.status(400).send('Email already exists')
+      }
+    })
 
   bcrypt.hash(req.body.password, 11)
       .then((hashed_pass) => {
@@ -42,18 +42,19 @@ knex('users').where('email', req.body.email)
             // expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
             // secure: router.get('env') === 'production'
         })
-          knex('users').insert(newUser, '*')
-            .then((userSend) => {
-              let user = userSend[0]
-              delete user.hashed_password;
-              delete user.created_at;
-              delete user.updated_at;
-              res.status(200).json(humps.camelizeKeys(user))
-            })
-          })
-      .catch((err) => {
-        console.log(err);
-      });
+          return knex('users').insert(newUser, '*')
+      })
+        .then((userSend) => {
+          let user = userSend[0]
+          delete user.hashed_password;
+          delete user.created_at;
+          delete user.updated_at;
+          res.status(200).json(humps.camelizeKeys(user))
+        })
+
+    .catch((err) => {
+      console.log(err);
+    });
 })
 
 module.exports = router;

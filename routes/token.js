@@ -33,39 +33,38 @@ router.post('/token', (req, res) => {
     res.set("Content-Type", "text/plain");
     return res.status(400).send('Password must not be blank')
   }
-        knex('users').select('hashed_password', 'id').where('email', req.body.email)
-            .then((toCompare) => {
-              if (toCompare.length === 0) {
-                res.set("Content-Type", "text/plain");
-                return res.status(400).send('Bad email or password')
-              }
-              let compare = toCompare[0].hashed_password;
-              let userID = toCompare[0].id
-                bcrypt.compare(req.body.password, compare)
-                .then((userAuth) => {
-                        const user = { user_id: userID };
-                        const token = jwt.sign(user, process.env.JWT_KEY, {
-                            expiresIn: '7 days'
-                        })
-                        res.cookie('token', token, {
-                            httpOnly: true
-                            // expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-                            // secure: router.get('env') === 'production'
-                        })
-                        knex('users').where('email', req.body.email)
-                            .then((users) => {
-                                let userToSend = users[0];
-                                delete userToSend.hashed_password;
-                                delete userToSend.created_at;
-                                delete userToSend.updated_at;
-                                res.status(200).json(humps.camelizeKeys(userToSend))
-                            })
-                    })
-                    .catch((badPass) => {
-                        res.set("Content-Type", "text/plain");
-                        return res.status(400).send('Bad email or password')
-                    })
-                })
+      knex('users').select('hashed_password', 'id').where('email', req.body.email)
+        .then((toCompare) => {
+          if (toCompare.length === 0) {
+            res.set("Content-Type", "text/plain");
+            return res.status(400).send('Bad email or password')
+          }
+          let compare = toCompare[0].hashed_password;
+          let userID = toCompare[0].id
+          bcrypt.compare(req.body.password, compare)
+            .then((userAuth) => {
+              const user = { user_id: userID };
+              const token = jwt.sign(user, process.env.JWT_KEY, {
+                expiresIn: '7 days'
+              })
+              res.cookie('token', token, {
+                httpOnly: true
+              })
+              return knex('users').where('email', req.body.email)
+            })
+            .then((users) => {
+              let userToSend = users[0];
+                delete userToSend.hashed_password;
+                delete userToSend.created_at;
+                delete userToSend.updated_at;
+                res.status(200).json(humps.camelizeKeys(userToSend))
+            })
+
+            .catch((badPass) => {
+              res.set("Content-Type", "text/plain");
+              return res.status(400).send('Bad email or password')
+            })
+        })
 
 })
 
