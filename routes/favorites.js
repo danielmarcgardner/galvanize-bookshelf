@@ -58,9 +58,10 @@ router.post('/favorites', (req, res) => {
       res.set("Content-Type", "text/plain");
       return res.status(400).send('Book ID must be an integer');
     }
-    knex('books').where('id', bookID)
-    .then((bookChecker) => {
-      if (bookChecker.length === 0) {
+    knex('books').max('id')
+    .then((largestId) => {
+      let largest = largestId[0].max
+      if (bookID < 0 || bookID > largest) {
         res.set("Content-Type", "text/plain");
         return res.status(404).send('Book not found');
       }
@@ -94,12 +95,17 @@ router.delete('/favorites', (req, res) => {
       res.set("Content-Type", "text/plain");
       return res.status(400).send('Book ID must be an integer');
     }
-    knex('books').where('id', bookID)
-    .then((bookChecker) => {
-      if (bookChecker.length === 0) {
+    knex('books').max('id')
+    .then((largestId) => {
+      let largest = largestId[0].max
+      if (bookID < 0 || bookID > largest) {
         res.set("Content-Type", "text/plain");
         return res.status(404).send('Favorite not found');
       }
+    })
+    .catch((err) => {
+      res.set("Content-Type", "text/plain");
+      return res.status(404).send('Favorite not found');
     })
     jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, payload) => {
         if (err) {
@@ -117,7 +123,7 @@ router.delete('/favorites', (req, res) => {
                 res.status(200).json(humps.camelizeKeys(deleteing))
             })
             .catch((err) => {
-                console.log(err)
+                console.log('I haz Error!')
             })
     })
 })

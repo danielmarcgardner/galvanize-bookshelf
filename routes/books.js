@@ -94,7 +94,6 @@ router.patch('/books/:id', (req, res, next) => {
   knex('books').max('id')
   .then((largestId) => {
     let largest = largestId[0].max
-    console.log(largest)
     if (id < 0 || id > largest) {
       return res.sendStatus(404);
     }
