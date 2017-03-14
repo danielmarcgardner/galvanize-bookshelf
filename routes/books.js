@@ -96,7 +96,7 @@ router.patch('/books/:id', (req, res, next) => {
     })
 })
 
-router.delete('/books/:id', ev(validations.delete), (req, res, next) => {
+router.delete('/books/:id', (req, res, next) => {
   const id = Number(req.params.id);
   knex('books').max('id')
     .then((largestId) => {
