@@ -12,6 +12,9 @@ const humps = require('humps');
 const cookieParser = require('cookie-parser')
 app.use(cookieParser())
 
+const ev = require('express-validation');
+const validations = require('../validations/token.js');
+
 router.get('/token', (req, res) => {
     jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, payload) => {
       if (err) {
@@ -24,15 +27,7 @@ router.get('/token', (req, res) => {
     });
   })
 
-router.post('/token', (req, res) => {
-  if (!req.body.email) {
-    res.set("Content-Type", "text/plain");
-    return res.status(400).send('Email must not be blank')
-  }
-  if (!req.body.password) {
-    res.set("Content-Type", "text/plain");
-    return res.status(400).send('Password must not be blank')
-  }
+router.post('/token', ev(validations.post), (req, res) => {
       knex('users').select('hashed_password', 'id').where('email', req.body.email)
         .then((toCompare) => {
           if (toCompare.length === 0) {

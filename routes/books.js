@@ -5,6 +5,8 @@ const express = require('express');
 const router = express.Router();
 const knex = require('../knex.js')
 const humps = require('humps');
+const ev = require('express-validation');
+const validations = require('../validations/books.js');
 
 router.get('/books', (req, res) => {
   knex('books').orderBy('title', 'asc')
@@ -40,48 +42,27 @@ router.get('/books/:id', (req, res, next) => {
   })
 })
 
-router.post('/books', (req, res) => {
-if (!req.body.title) {
-  res.set("Content-Type", "text/plain");
-  return res.status(400).send('Title must not be blank')
-}
-if (!req.body.author) {
-  res.set("Content-Type", "text/plain");
-  return res.status(400).send('Author must not be blank')
-}
-if (!req.body.genre) {
-  res.set("Content-Type", "text/plain");
-  return res.status(400).send('Genre must not be blank')
-}
-if (!req.body.description) {
-  res.set("Content-Type", "text/plain");
-  return res.status(400).send('Description must not be blank')
-}
-if (!req.body.cover_url) {
-  res.set("Content-Type", "text/plain");
-  return res.status(400).send('Cover URL must not be blank')
-}
-
-let newBook ={
-  title: req.body.title,
-  author: req.body.author,
-  genre: req.body.genre,
-  description: req.body.description,
-  cover_url: req.body.cover_url,
-  created_at: new Date(),
-  updated_at: new Date()
-}
-  knex('books').insert(newBook)
-    .then((result) => {
-      return knex('books').where('title', newBook.title)
-    })
-    .then((b) => {
-        let booksItem = b[0];
-        res.status(200).json(humps.camelizeKeys(booksItem));
-    })
-    .catch((err) => {
-      console.log(err)
-    })
+router.post('/books', ev(validations.post), (req, res) => {
+  let newBook = {
+    title: req.body.title,
+    author: req.body.author,
+    genre: req.body.genre,
+    description: req.body.description,
+    cover_url: req.body.cover_url,
+    created_at: new Date(),
+    updated_at: new Date()
+  }
+    knex('books').insert(newBook)
+      .then((result) => {
+        return knex('books').where('title', newBook.title)
+      })
+      .then((b) => {
+          let booksItem = b[0];
+          res.status(200).json(humps.camelizeKeys(booksItem));
+      })
+      .catch((err) => {
+        console.log(err)
+      })
 })
 
 router.patch('/books/:id', (req, res, next) => {
@@ -115,11 +96,8 @@ router.patch('/books/:id', (req, res, next) => {
     })
 })
 
-router.delete('/books/:id', (req, res, next) => {
+router.delete('/books/:id', ev(validations.delete), (req, res, next) => {
   const id = Number(req.params.id);
-  if (isNaN(id)) {
-    next()
-  }
   knex('books').max('id')
     .then((largestId) => {
       let largest = largestId[0].max

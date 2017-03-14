@@ -7,6 +7,8 @@ const router = express.Router();
 const knex = require('../knex.js')
 const humps = require('humps');
 const jwt = require('jsonwebtoken');
+const ev = require('express-validation');
+const validations = require('../validations/favorites.js');
 
 router.get('/favorites', (req, res) => {
     jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, payload) => {
@@ -23,7 +25,7 @@ router.get('/favorites', (req, res) => {
     })
 })
 
-router.get('/favorites/check/', (req, res) => {
+router.get('/favorites/check/', ev(validations.get), (req, res) => {
     let id = Number(req.query.bookId)
     if (isNaN(id)) {
       res.set("Content-Type", "text/plain");
@@ -52,7 +54,7 @@ router.get('/favorites/check/', (req, res) => {
     })
 })
 
-router.post('/favorites', (req, res) => {
+router.post('/favorites',ev(validations.post), (req, res) => {
     let bookID = Number(req.body.bookId)
     if (isNaN(bookID)) {
       res.set("Content-Type", "text/plain");
@@ -64,6 +66,10 @@ router.post('/favorites', (req, res) => {
         res.set("Content-Type", "text/plain");
         return res.status(404).send('Book not found');
       }
+    })
+    .catch((err) => {
+      res.set("Content-Type", "text/plain");
+      return res.status(404).send('Book not found');
     })
     jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, payload) => {
         if (err) {
@@ -83,24 +89,25 @@ router.post('/favorites', (req, res) => {
                 res.status(200).json(humps.camelizeKeys(newFav))
             })
             .catch((err) => {
-                console.log(err)
+                console.log('err')
             })
     })
 })
 
-router.delete('/favorites', (req, res) => {
+router.delete('/favorites', ev(validations.delete), (req, res) => {
     let bookID = Number(req.body.bookId)
     if (isNaN(bookID)) {
       res.set("Content-Type", "text/plain");
       return res.status(400).send('Book ID must be an integer');
     }
-    knex('books').where('id', bookID)
-    .then((bookChecker) => {
-      if (bookChecker.length === 0) {
+    knex('books').max('id')
+    .then((maxID) => {
+      if (bookID > maxID[0].max || bookID < 0) {
         res.set("Content-Type", "text/plain");
         return res.status(404).send('Favorite not found');
       }
     })
+
     jwt.verify(req.cookies.token, process.env.JWT_KEY, (err, payload) => {
         if (err) {
             res.set("Content-Type", "application/json");
@@ -117,7 +124,7 @@ router.delete('/favorites', (req, res) => {
                 res.status(200).json(humps.camelizeKeys(deleteing))
             })
             .catch((err) => {
-                console.log(err)
+                console.log('err')
             })
     })
 })

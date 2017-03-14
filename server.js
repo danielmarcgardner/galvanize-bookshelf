@@ -51,6 +51,16 @@ app.use(favorites);
 app.use(token);
 app.use(users);
 
+app.use((err, _req, res, _next) => {
+  if (err.status) {
+    res.set('Content-Type', 'text/plain')
+    return res.status(err.status).send(err);
+  }
+
+  console.error(err);
+  res.sendStatus(500);
+});
+
 app.use((_req, res) => {
   res.sendStatus(404);
 });

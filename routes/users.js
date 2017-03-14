@@ -7,16 +7,10 @@ const router = express.Router();
 const knex = require('../knex.js')
 const humps = require('humps');
 const jwt = require('jsonwebtoken')
+const ev = require('express-validation');
+const validations = require('../validations/users.js');
 
-router.post('/users', (req, res) => {
-  if (!req.body.email) {
-    res.set("Content-Type", "text/plain");
-    return res.status(400).send('Email must not be blank')
-    }
-  if (!req.body.password) {
-    res.set("Content-Type", "text/plain");
-    return res.status(400).send('Password must be at least 8 characters long')
-  }
+router.post('/users', ev(validations.post), (req, res) => {
   knex('users').where('email', req.body.email)
     .then((checkingEmail) => {
       if (checkingEmail.length > 0) {
@@ -53,8 +47,9 @@ router.post('/users', (req, res) => {
         })
 
     .catch((err) => {
-      console.log(err);
-    });
+        console.log(err);
+      });
 })
+
 
 module.exports = router;
